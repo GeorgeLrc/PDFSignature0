@@ -1,0 +1,3 @@
+- [ ] Update IndividualTemplate PdfViewer paths to use VITE_BACKEND_URL
+- [ ] Replace remaining 5001 file URLs in frontend demo pages
+- [ ] Confirm PdfViewer handles fetch errors gracefully
