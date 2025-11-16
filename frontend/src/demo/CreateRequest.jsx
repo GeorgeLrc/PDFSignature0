@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 // import { AppContext } from "../context-api/AppContext";
 import { toast } from "react-toastify";
@@ -81,31 +81,32 @@ export default function CreateRequest() {
     setSearchTerm(""); // Clear search input after selecting
   };
 
+  const openPlaceSignModal = (recipient = null) => {
+    setCurrentRecipient(recipient);
+    const existing = recipient?.signaturePositions ?? [];
+    setSignaturesForRecipient(existing.map((sig) => ({ ...sig })));
+    setIsPlaceSignModalOpen(true);
+  };
+
   const closeModalAndAddSignatureToTheRecipient = () => {
-    //close the modal
     setIsPlaceSignModalOpen(false);
-    console.log(currentRecipient)
 
-    //add the signatures to the current recipient
+    if (!currentRecipient) {
+      setSignaturesForRecipient([]);
+      return;
+    }
+
+    // Save the current signatures to the recipient before clearing
     setRecipients((prevRecipients) =>
-      prevRecipients.map((recipient) => {
-
-        console.log(recipient._id)
-        return recipient._id === currentRecipient._id
+      prevRecipients.map((recipient) =>
+        recipient._id === currentRecipient._id
           ? { ...recipient, signaturePositions: signaturesForRecipient }
           : recipient
-      })
+      )
     );
-    console.log("signatures for current recipient")
-    console.log(signaturesForRecipient)
 
-    //clear the signatures place
     setSignaturesForRecipient([]);
-
-    console.log("recipients")
-    console.log(recipients)
-
-  }
+  };
 
   // Remove recipient from the list
   const removeRecipient = (id) => {
@@ -216,10 +217,7 @@ export default function CreateRequest() {
                       <span className="text-sm">{user.first_name} {user.last_name}</span>
                       <button
                         className="text-xs px-2 py-1 bg-blue-600 text-white rounded"
-                        onClick={() => {
-                          setCurrentRecipient(user)
-                          setIsPlaceSignModalOpen(true);
-                        }}
+                        onClick={() => openPlaceSignModal(user)}
                       >
                         Place sign
                       </button>
@@ -293,7 +291,7 @@ export default function CreateRequest() {
           <div className="bg-white p-4 rounded-lg shadow">
             <h4 className="font-semibold mb-2">Actions</h4>
             <button
-              onClick={() => setIsPlaceSignModalOpen(true)}
+              onClick={() => openPlaceSignModal(null)}
               className="w-full px-3 py-2 bg-blue-600 text-white rounded-md"
             >
               Place Sign (Preview)
@@ -313,12 +311,13 @@ export default function CreateRequest() {
         isOpen={isPlaceSignModalOpen}
         onRequestClose={closeModalAndAddSignatureToTheRecipient}
         contentLabel="Place Signature"
-        className="p-5 mt-20 bg-white rounded-lg shadow-lg max-w-4xl mx-auto"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+        className="relative z-[70] p-5 mt-20 bg-white rounded-lg shadow-lg max-w-4xl mx-auto"
+        overlayClassName="fixed inset-0 z-[60] bg-black bg-opacity-50 flex items-center justify-center"
       >
         <h2 className="text-xl font-bold">Place Signature</h2>
         {templateFileUrl ? (
           <PlaceSign
+            key={currentRecipient?._id ?? "preview"}
             pdfFile={templateFileUrl}
             setSignatures={setSignaturesForRecipient}
             signatures={signaturesForRecipient}

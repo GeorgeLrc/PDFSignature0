@@ -57,7 +57,7 @@ export default function AppLayout() {
         <Header collapsed={collapsed} setCollapsed={setCollapsed} />
         
         {/* Main Content */}
-        <main className="min-h-[calc(100vh-80px)] p-6 space-y-6">
+        <main className="min-h-[calc(100vh-80px)] p-6 space-y-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

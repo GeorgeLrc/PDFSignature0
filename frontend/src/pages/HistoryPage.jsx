@@ -29,7 +29,8 @@ export default function HistoryPage() {
     getRequests();
     getMyRequests();
     getRequestsByOthers();
-  }, [getRequests, getMyRequests, getRequestsByOthers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!userData || !userData._id) return;
@@ -50,7 +51,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, filteredRequests]);
+  }, [activeTab, filteredRequests.length]);
 
   const paginatedRequests = useMemo(() => {
     const start = (currentPage - 1) * ROWS_PER_PAGE;
@@ -65,8 +66,8 @@ export default function HistoryPage() {
   const showingTo = Math.min(startIndex + paginatedRequests.length, totalRecords);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/70">
+    <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10">
+      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/70 relative z-10">
         <div className="border-b border-white/10 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 px-6 py-8 text-white sm:px-8">
           <h2 className="text-2xl font-semibold sm:text-3xl">History</h2>
           <p className="mt-2 max-w-2xl text-sm text-white/75">
@@ -101,7 +102,7 @@ export default function HistoryPage() {
           </div>
 
           {paginatedRequests.length > 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/70">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/70 relative z-10">
               <HistoryTable requests={paginatedRequests} startIndex={startIndex} />
               <Pagination
                 currentPage={currentPage}

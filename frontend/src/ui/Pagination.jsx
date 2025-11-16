@@ -44,11 +44,11 @@ export default function Pagination({ currentPage, totalItems, pageSize, onPageCh
   };
 
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm font-medium">
+    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm font-medium relative z-20">
       <button
         type="button"
         onClick={() => handlePageChange(safeCurrentPage - 1)}
-        className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:border-blue-400 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-300"
+        className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:border-blue-400 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-300 relative z-20"
         disabled={safeCurrentPage === 1}
       >
         Prev
@@ -61,7 +61,7 @@ export default function Pagination({ currentPage, totalItems, pageSize, onPageCh
             key={page}
             type="button"
             onClick={() => handlePageChange(page)}
-            className={`rounded-full px-3 py-1 transition focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-400/40 ${
+            className={`rounded-full px-3 py-1 transition focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-400/40 relative z-20 ${
               isActive
                 ? "bg-blue-600 text-white shadow-sm dark:bg-blue-500"
                 : "border border-slate-300 text-slate-600 hover:border-blue-400 hover:text-blue-600 dark:border-slate-600 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-300"
@@ -75,7 +75,7 @@ export default function Pagination({ currentPage, totalItems, pageSize, onPageCh
       <button
         type="button"
         onClick={() => handlePageChange(safeCurrentPage + 1)}
-        className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:border-blue-400 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-300"
+        className="rounded-full border border-slate-300 px-3 py-1 text-slate-600 transition hover:border-blue-400 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-300 relative z-20"
         disabled={safeCurrentPage === totalPages}
       >
         Next

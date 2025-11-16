@@ -304,8 +304,8 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
               key={`${pageNumber}-${index}`}
               className={`absolute rounded-md transition-all border-2 ${
                 selectedIndex === index
-                  ? "border-blue-600 bg-blue-500/20 ring-2 ring-blue-300"
-                  : "border-blue-500 border-dashed bg-blue-500/10"
+                  ? "border-purple-600 bg-purple-500/20 ring-2 ring-purple-300"
+                  : "border-orange-500 border-dashed bg-orange-500/10"
               }`}
               style={{
                 left: `${x * 100}%`,
@@ -321,7 +321,7 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
               <button
                 type="button"
                 aria-label="Remove signature position"
-                className="absolute -top-3 -right-3 h-6 w-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center shadow"
+                className="absolute -top-3 -right-3 h-6 w-6 rounded-full bg-red-600 text-white text-xs flex items-center justify-center shadow"
                 onClick={(event) => {
                   event.stopPropagation();
                   handleRemoveSignature(index);
@@ -329,7 +329,10 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
               >
                 ×
               </button>
-              <span className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-semibold">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl font-bold text-red-500">+</span>
+              </div>
+              <span className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-600 text-white text-xs font-semibold">
                 <PenTool size={12} />
               </span>
             </div>
@@ -341,7 +344,7 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
             className={`p-2 rounded-full ${
               pageNumber <= 1
                 ? "bg-gray-300 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
+                : "bg-teal-500 hover:bg-teal-600 text-white"
             }`}
             onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
             disabled={pageNumber <= 1}
@@ -359,7 +362,7 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
             className={`p-2 rounded-full ${
               !numPages || pageNumber >= numPages
                 ? "bg-gray-300 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
+                : "bg-teal-500 hover:bg-teal-600 text-white"
             }`}
             onClick={() =>
               setPageNumber((prev) =>
@@ -384,8 +387,8 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
                   type="button"
                   className={`w-full rounded border px-3 py-2 text-left text-sm transition ${
                     selectedIndex === idx
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : "border-gray-200 hover:border-purple-300 hover:bg-purple-50"
                   }`}
                   onClick={() => handleSelectSignature(idx)}
                 >
@@ -401,9 +404,9 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
         )}
 
         {selectedNormalized && selectedIndex !== null ? (
-          <div className="mb-5 rounded-lg border border-blue-200 bg-blue-50/60 p-3">
-            <h4 className="text-sm font-semibold text-blue-700 mb-3">Adjust Selected Box</h4>
-            <p className="text-xs text-blue-600 mb-3">
+          <div className="mb-5 rounded-lg border border-purple-200 bg-purple-50/60 p-3">
+            <h4 className="text-sm font-semibold text-purple-700 mb-3">Adjust Selected Box</h4>
+            <p className="text-xs text-purple-600 mb-3">
               Page {selectedSignature?.page ?? pageNumber}
             </p>
 
@@ -421,7 +424,7 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
                     width: parseFloat(event.target.value),
                   });
                 }}
-                className="mt-1 w-full accent-blue-600"
+                className="mt-1 w-full accent-purple-600"
               />
             </label>
 
@@ -439,7 +442,7 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
                     height: parseFloat(event.target.value),
                   });
                 }}
-                className="mt-1 w-full accent-blue-600"
+                className="mt-1 w-full accent-purple-600"
               />
             </label>
 
@@ -457,7 +460,7 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
                     x: parseFloat(event.target.value),
                   });
                 }}
-                className="mt-1 w-full accent-blue-600"
+                className="mt-1 w-full accent-purple-600"
               />
             </label>
 
@@ -475,13 +478,13 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
                     y: parseFloat(event.target.value),
                   });
                 }}
-                className="mt-1 w-full accent-blue-600"
+                className="mt-1 w-full accent-purple-600"
               />
             </label>
           </div>
         ) : (
           <div className="mb-5 rounded-lg border border-dashed border-gray-300 p-3 text-xs text-gray-500">
-            Select a blue box to fine-tune its size and position.
+            Select a signature box to fine-tune its size and position.
           </div>
         )}
 
@@ -490,7 +493,7 @@ function PlaceSign({ pdfFile, signatures, setSignatures }) {
           <div
             key={`thumb-${index}`}
             className={`cursor-pointer mb-2 p-1 border rounded ${
-              pageNumber === index + 1 ? "border-blue-500" : "border-gray-300"
+              pageNumber === index + 1 ? "border-purple-500" : "border-gray-300"
             }`}
             onClick={() => setPageNumber(index + 1)}
             role="button"
