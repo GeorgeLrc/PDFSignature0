@@ -7,6 +7,7 @@ import api from "@/utils/api";
 import useAuth from "@/hooks/useAuth";
 import Modal from "react-modal";
 import PlaceSign from "./PlaceSign";
+import { PenTool, MapPin, CheckCircle } from 'lucide-react';
 
 export default function SignPad({ request, setIsModalOpen }) {
   const [showPad, setShowPad] = useState(false);
@@ -142,6 +143,12 @@ export default function SignPad({ request, setIsModalOpen }) {
       return;
     }
 
+    // Check if user has already signed
+    if (recipient.signed) {
+      toast.error("You have already signed this document.");
+      return;
+    }
+
     const positionsToUse = signaturePositions.length
       ? signaturePositions
       : Array.isArray(recipient.signaturePositions)
@@ -149,7 +156,7 @@ export default function SignPad({ request, setIsModalOpen }) {
       : [];
 
     if (!positionsToUse.length) {
-      toast.error('No signature positions defined. Use "Set signature positions" before applying.');
+      toast.error('No signature positions defined. Use "Set signature positions" first to place your signature areas.');
       return;
     }
 
@@ -249,30 +256,88 @@ export default function SignPad({ request, setIsModalOpen }) {
   };
 
   return (
-    <div>
-      <div className="flex gap-2">
+    <div className="space-y-6 relative z-[10000]">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+          <PenTool size={18} />
+          Signing Process
+        </h3>
+        <p className="text-sm text-blue-700 mb-2">
+          Follow these steps to sign the document:
+        </p>
+        <ol className="text-sm text-blue-700 list-decimal list-inside space-y-1">
+          <li>First, set your signature positions on the document</li>
+          <li>Draw or create your signature</li>
+          <li>Apply your signature to all marked positions</li>
+        </ol>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-[10000]">
         <button
-          onClick={() => setShowPad(true)}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={() => {
+            console.log('Set Signature Positions button clicked');
+            setIsPlacementModalOpen(true);
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors duration-200 relative z-[10000] cursor-pointer"
           type="button"
+          style={{ 
+            position: 'relative', 
+            zIndex: 10000,
+            pointerEvents: 'all'
+          }}
         >
-          Draw Signature
+          <MapPin size={18} />
+          <span>Set Signature Positions</span>
+          {signaturePositions.length > 0 && (
+            <span className="bg-purple-700 text-white text-xs px-2 py-1 rounded-full">
+              {signaturePositions.length}
+            </span>
+          )}
         </button>
+        
         <button
-          onClick={() => setIsPlacementModalOpen(true)}
-          className="px-4 py-2 bg-indigo-500 text-white rounded"
+          onClick={() => {
+            console.log('Draw Signature button clicked');
+            setShowPad(true);
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200 relative z-[10000] cursor-pointer"
           type="button"
+          style={{ 
+            position: 'relative', 
+            zIndex: 10000,
+            pointerEvents: 'all'
+          }}
         >
-          Set Signature Positions
+          <PenTool size={18} />
+          <span>Draw Signature</span>
+          {signature && <CheckCircle size={16} className="text-green-300" />}
         </button>
+        
         <button
           onClick={addSignatureToPDF}
-          className="px-4 py-2 bg-green-500 text-white"
+          disabled={!signature || !signaturePositions.length}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors duration-200 relative z-[10000] cursor-pointer"
           type="button"
+          style={{ 
+            position: 'relative', 
+            zIndex: 10000,
+            pointerEvents: signature && signaturePositions.length ? 'all' : 'none'
+          }}
         >
-          Apply Signature
+          <CheckCircle size={18} />
+          <span>Apply Signature</span>
         </button>
       </div>
+
+      {signaturePositions.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <p className="text-sm text-green-700 flex items-center gap-2">
+            <CheckCircle size={16} className="text-green-600" />
+            {signaturePositions.length} signature position{signaturePositions.length !== 1 ? 's' : ''} set. 
+            Your signature will be applied to all marked areas.
+          </p>
+        </div>
+      )}
 
       {showPad && (
         <SignaturePad
@@ -291,10 +356,27 @@ export default function SignPad({ request, setIsModalOpen }) {
         isOpen={isPlacementModalOpen}
         onRequestClose={() => setIsPlacementModalOpen(false)}
         contentLabel="Set Signature Positions"
-        className="p-5 mt-12 bg-white rounded-lg shadow-lg max-w-5xl mx-auto"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+        className="p-5 mt-12 bg-white rounded-lg shadow-lg max-w-5xl mx-auto relative z-[10001]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]"
+        style={{
+          overlay: {
+            zIndex: 10000,
+          },
+          content: {
+            zIndex: 10001,
+          }
+        }}
       >
-        <h2 className="text-xl font-semibold mb-4">Set Signature Positions</h2>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+            <MapPin size={20} />
+            Set Signature Positions
+          </h2>
+          <p className="text-sm text-gray-600">
+            Click anywhere on the PDF to create signature areas. You can create multiple positions 
+            for multiple signatures on the same document.
+          </p>
+        </div>
         {pdfSource ? (
           <PlaceSign
             pdfFile={pdfSource}
@@ -306,14 +388,22 @@ export default function SignPad({ request, setIsModalOpen }) {
             Preview unavailable. Please ensure the PDF is accessible.
           </p>
         )}
-        <div className="mt-4 flex justify-between">
-          <button
-            type="button"
-            className="px-3 py-2 bg-gray-100 rounded"
-            onClick={() => setSignaturePositions([])}
-          >
-            Clear Positions
-          </button>
+        <div className="mt-4 flex justify-between items-center">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+              onClick={() => setSignaturePositions([])}
+            >
+              Clear All Positions
+            </button>
+            {signaturePositions.length > 0 && (
+              <span className="px-3 py-2 bg-green-100 text-green-700 rounded text-sm flex items-center gap-2">
+                <CheckCircle size={16} />
+                {signaturePositions.length} position{signaturePositions.length !== 1 ? 's' : ''} set
+              </span>
+            )}
+          </div>
           <button
             type="button"
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"

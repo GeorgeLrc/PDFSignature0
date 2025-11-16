@@ -23,9 +23,9 @@ function PdfViewer({ pdfFile }) {
   const goNext = () => setPageNumber((p) => Math.min(p + 1, numPages || 1));
 
   return (
-    <div className="flex bg-gray-100 min-h-screen p-6 gap-4">
+    <div className="flex bg-gray-100 min-h-screen p-6 gap-4 relative">
       {/* Main viewer */}
-      <div className="flex flex-col items-center bg-white shadow-lg rounded-lg p-4 w-4/5">
+      <div className="flex flex-col items-center bg-white shadow-lg rounded-lg p-4 w-4/5 relative z-10">
         <Document
           file={pdfFile}
           onLoadSuccess={onDocumentLoadSuccess}
