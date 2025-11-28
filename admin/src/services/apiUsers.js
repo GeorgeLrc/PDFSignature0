@@ -55,16 +55,18 @@ export const createNewUser = async (newUser) => {
                 'Content-Type': 'multipart/form-data',
             },
         });
-
-        return data.user
+        return data.user;
     } catch (err) {
         console.error("Error creating user:", err);
-        toast.error('Something went wrong')
+        throw err;
     }
 }
 
 export const editUser = async ({ accessToken, userId, userData }) => {
     try {
+        console.log("📤 Sending edit user request for userId:", userId);
+        console.log("Form data keys:", Array.from(userData.keys()));
+        
         const { data } = await api.post(`/api/admin/update-user/${userId}`, userData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -72,10 +74,16 @@ export const editUser = async ({ accessToken, userId, userData }) => {
             },
         })
 
+        console.log("✅ Edit user response:", data);
         return data.user
 
     } catch (err) {
-        console.error("Error updating user:", err);
-        toast.error('Something went wrong')
+        console.error("❌ Error updating user:", err);
+        console.error("Error response data:", err.response?.data);
+        console.error("Error message:", err.message);
+        
+        const errorMessage = err.response?.data?.message || 'Something went wrong';
+        toast.error(errorMessage)
+        throw err; // Re-throw so useMutation can handle it
     }
 }

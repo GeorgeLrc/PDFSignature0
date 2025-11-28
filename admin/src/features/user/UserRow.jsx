@@ -97,15 +97,15 @@ export default function UserRow({ user, animationDelay = 0 }) {
                                         readOnly
                                         onClick={(e) => e.preventDefault()}
                                     />
-                                    <div className="h-7 w-12 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full transition-all duration-300 peer-checked:bg-gradient-to-r peer-checked:from-green-400 peer-checked:to-green-500 shadow-lg">
+                                    <div className="h-7 w-12 bg-green-500 dark:bg-green-600 peer-focus:outline-none rounded-full transition-all duration-300 peer-checked:bg-red-500 shadow-lg">
                                         <div className={cn("absolute w-5 h-5 bg-white rounded-full top-1 shadow-lg transition-transform duration-300 border border-slate-200", user?.isRestricted ? 'translate-x-6' : 'translate-x-1')}></div>
                                     </div>
                                 </div>
                                 <span className={cn(
                                     "text-sm font-semibold transition-colors",
-                                    user?.isRestricted ? "text-green-600 dark:text-green-400" : "text-slate-600 dark:text-slate-400"
+                                    user?.isRestricted ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
                                 )}>
-                                    {user?.isRestricted ? 'Active' : 'Inactive'}
+                                    {user?.isRestricted ? 'Restricted' : 'Active'}
                                 </span>
                             </div>
                         </Modal.Open>
@@ -148,9 +148,9 @@ export default function UserRow({ user, animationDelay = 0 }) {
                         {/* Confirm Toggle Modal */}
                         <Modal.Window name='confirm-toggle' width='450px' padding={false}>
                             <ConfirmAction
-                                title={user?.isRestricted ? 'Restrict User' : 'Unestrict User'}
-                                description={user?.isRestricted ? 'Are you sure you want to Restrict this user?' : 'Are you sure you want to Unrestrict this user?'}
-                                confirmLabel={user?.isRestricted ? 'Restrict' : 'Unrestrict'}
+                                title={user?.isRestricted ? 'Unrestrict User' : 'Restrict User'}
+                                description={user?.isRestricted ? 'Are you sure you want to Unrestrict this user?' : 'Are you sure you want to Restrict this user?'}
+                                confirmLabel={user?.isRestricted ? 'Unrestrict' : 'Restrict'}
                                 disabled={isToggling}
                                 onAction={() => {
                                     return new Promise((resolve) => {

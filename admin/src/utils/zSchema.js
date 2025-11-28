@@ -18,14 +18,25 @@ export const createUserFormFieldSchema = z.object({
         .min(1, { message: "Email is required." })
         .email({ message: "Invalid email format" }),
     password: z.string()
-        .min(1, { message: 'Password is required.' })
-        .min(6, { message: 'Password must be at least 6 characters long.' }
+        .optional()
+        .refine(
+            (val) => !val || val.length >= 6,
+            { message: 'Password must be at least 6 characters long.' }
         ),
     image: z.any().optional(),
     editImage: z.any().optional()
 }).superRefine((data, ctx) => {
     const isEdit = !!data.editImage || !data.image;
+    
+    // For create: password is required
     if (!isEdit) {
+        if (!data.password) {
+            ctx.addIssue({
+                path: ['password'],
+                code: z.ZodIssueCode.custom,
+                message: 'Password is required.'
+            });
+        }
         if (!data.image || data.image.length !== 1) {
             ctx.addIssue({
                 path: ['image'],

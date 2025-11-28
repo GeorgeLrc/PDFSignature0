@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const userModel = require("../models/userModel");
 const { transporter } = require("../middleware/nodemailer");
+const { validatePassword, getPasswordRequirements } = require("../utils/passwordValidator");
 
 // user login
 const loginUser = async (req, res) => {
@@ -18,13 +19,35 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid email" });
     }
 
-    const isCorrectPassword = user.password === password; // Use bcrypt in production
+    // Support both bcrypt-hashed and legacy plain-text stored passwords.
+    // If stored password looks like a bcrypt hash, use bcrypt.compare.
+    // If it's a legacy plain-text password, compare directly and upgrade to a hash on success.
+    const storedPassword = user.password || "";
+    const isBcryptHash = /^\$2[aby]\$\d{2}\$/.test(storedPassword);
+
+    let isCorrectPassword = false;
+    if (isBcryptHash) {
+      isCorrectPassword = await bcrypt.compare(password, storedPassword);
+    } else {
+      // Legacy account with plain-text password stored (pre-hash).
+      isCorrectPassword = password === storedPassword;
+      if (isCorrectPassword) {
+        // Re-hash password and save upgraded record (non-blocking on errors).
+        try {
+          user.password = await bcrypt.hash(password, 10);
+          await user.save();
+        } catch (err) {
+          // Log error but allow login to proceed; migration is best-effort.
+          console.error("Failed to re-hash legacy password for user", user._id, err.message || err);
+        }
+      }
+    }
 
     if (!isCorrectPassword) {
       return res.status(401).json({ success: false, message: "Invalid password" });
     }
 
-    if (!user.isRestricted) {
+    if (user.isRestricted) {
       return res.status(401).json({
         success: false,
         message: "Your account is blocked. Please contact the IT department.",
@@ -150,6 +173,17 @@ const resetPassword = async (req, res) => {
 
     if (user.resetOtpExpireAt < Date.now()) {
       return res.json({ success: false, message: "OTP Expired" });
+    }
+
+    // Validate new password strength
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Password does not meet security requirements",
+        requirements: getPasswordRequirements(),
+        errors: passwordValidation.errors,
+      });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);

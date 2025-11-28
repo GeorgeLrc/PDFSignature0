@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validatePasswordStrength } from "./passwordRules";
 
 export const LogInFormFieldsSchema = z.object({
   email: z
@@ -8,7 +9,15 @@ export const LogInFormFieldsSchema = z.object({
   password: z
     .string()
     .min(1, { message: "Password is required." })
-    .min(6, { message: "Password must be at least 6 characters long." }),
+    .refine(
+      (password) => validatePasswordStrength(password).isValid,
+      (password) => {
+        const validation = validatePasswordStrength(password);
+        return {
+          message: validation.errors[0] || "Password does not meet security requirements",
+        };
+      }
+    ),
 });
 
 export const createUserFormFieldSchema = z
@@ -22,7 +31,15 @@ export const createUserFormFieldSchema = z
     password: z
       .string()
       .min(1, { message: "Password is required." })
-      .min(6, { message: "Password must be at least 6 characters long." }),
+      .refine(
+        (password) => validatePasswordStrength(password).isValid,
+        (password) => {
+          const validation = validatePasswordStrength(password);
+          return {
+            message: validation.errors[0] || "Password does not meet security requirements",
+          };
+        }
+      ),
     image: z.any().optional(),
     editImage: z.any().optional(),
   })

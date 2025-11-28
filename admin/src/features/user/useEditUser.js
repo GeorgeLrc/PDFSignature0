@@ -9,13 +9,16 @@ const useEditUser = () => {
 
     const { mutate: editUser, isPending: isEditing } = useMutation({
         mutationFn: ({ userId, userData }) => editUserApi({ accessToken, userId, userData }),
-        onSuccess: () => {
+        onSuccess: (data) => {
+            console.log("✅ User edit successful:", data);
             toast.success("User edited successfully")
             queryClient.invalidateQueries({ queryKey: ['user-lists'] })
         },
-        onError: () => [
-            toast.error("Failed to edit user")
-        ]
+        onError: (error) => {
+            console.error("❌ User edit error:", error);
+            const errorMessage = error?.response?.data?.message || error?.message || "Failed to edit user";
+            toast.error(errorMessage)
+        }
     })
 
     return { editUser, isEditing }

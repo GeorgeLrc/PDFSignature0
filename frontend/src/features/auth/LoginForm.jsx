@@ -3,6 +3,7 @@ import { useState } from "react"
 import { cn } from "@/utils/cn"
 import { useForm } from "react-hook-form"
 import { LogInFormFieldsSchema } from "@/utils/zSchema"
+import { PASSWORD_REQUIREMENTS_TEXT } from "@/utils/passwordRules"
 import useLogin from "./useLogin"
 
 export default function LoginForm() {
@@ -63,9 +64,17 @@ export default function LoginForm() {
                         {isVisible ? "visibility" : "visibility_off"}
                     </span>
                 </span>
-                {errors.password && <span className="flex items-center gap-1 mt-1 text-sm text-red-600"><span className="text-base material-symbols-outlined">
-                    error
-                </span>{errors.password.message}</span>}
+                {errors.password && (
+                  <div className="flex items-start gap-1 mt-2 text-sm text-red-600">
+                    <span className="text-base material-symbols-outlined flex-shrink-0 mt-0.5">error</span>
+                    <div>
+                      <div>{errors.password.message}</div>
+                      <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded whitespace-pre-wrap dark:bg-gray-800 dark:text-gray-300">
+                        {PASSWORD_REQUIREMENTS_TEXT}
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
 
             {/* Login Button */}

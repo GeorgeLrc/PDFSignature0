@@ -7,6 +7,8 @@ const {
   toggleRestrictedValue,
   deleteUser,
   updateUserData,
+  verifyUserPassword,
+  resetUserPassword,
 } = require("../controllers/adminController");
 const adminAuth = require("../middleware/adminAuth");
 const {
@@ -36,6 +38,10 @@ adminRouter.post(
 );
 
 adminRouter.post("/delete-user/:id", adminAuth, deleteUser);
+
+adminRouter.post("/verify-password", adminAuth, verifyUserPassword);
+
+adminRouter.post("/reset-password", adminAuth, resetUserPassword);
 
 adminRouter.get("/templates", getAllTemplates);
 

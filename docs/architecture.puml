@@ -1,0 +1,44 @@
+@startuml
+!theme plain
+title Doitung - High Level Architecture
+
+skinparam componentStyle rectangle
+
+package "Client" {
+  [User App (React + Vite)] as UserApp
+  [Admin App (React + Vite)] as AdminApp
+}
+
+package "API" {
+  [Express API] as API
+  [Auth (JWT)] as Auth
+  [Upload Middleware (multer)] as Multer
+  [Puppeteer Service] as Puppeteer
+}
+
+database "MongoDB (Mongoose)" as MongoDB
+
+cloud "Cloud Services" {
+  [Cloudinary] as Cloudinary
+  [SMTP / Email] as SMTP
+}
+
+UserApp --> API : HTTPS /api/auth/*
+AdminApp --> API : HTTPS /api/admin/*
+API --> MongoDB : read/write (Users, Templates, Requests)
+API --> Cloudinary : upload/download PDFs
+API --> SMTP : send notification emails (nodemailer)
+API --> Puppeteer : generate PDF (headless)
+API -> Multer : file handling (local / files/) 
+Multer --> API : attaches req.file
+
+note right of API
+ - Express routes:
+   - /api/auth/* (userRouter)
+   - /api/admin/* (adminRouter)
+ - Controllers: userController, templateController, requestController, adminController
+ - Auth: JWT stored in httpOnly cookie and Authorization bearer
+ - File storage: local files/ folder + Cloudinary integration
+end note
+
+@enduml

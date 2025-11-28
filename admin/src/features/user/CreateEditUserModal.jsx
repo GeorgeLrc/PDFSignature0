@@ -7,8 +7,11 @@ import { cn } from "@/utils/cn";
 import { UserCog, UserPlus } from "lucide-react";
 import useCreateUser from "./useCreateUser";
 import useEditUser from "./useEditUser";
+import AdminPasswordConfirmModal from "@/ui/modals/AdminPasswordConfirmModal";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function CreateEditUserModal({ userToEdit = {}, onCloseModal }) {
+    const [showPassword, setShowPassword] = useState(false);
     const { _id: editId, ...editValues } = userToEdit
     const isEditSession = Boolean(editId)
 
@@ -16,8 +19,10 @@ export default function CreateEditUserModal({ userToEdit = {}, onCloseModal }) {
     const { editUser, isEditing } = useEditUser()
 
     const [preview, setPreview] = useState(userToEdit?.image || "")
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+    const [pendingFormData, setPendingFormData] = useState(null)
 
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm({
         defaultValues: isEditSession ? editValues : {},
         resolver: zodResolver(createUserFormFieldSchema)
     })
@@ -29,26 +34,54 @@ export default function CreateEditUserModal({ userToEdit = {}, onCloseModal }) {
         formData.append('first_name', data.first_name);
         formData.append('last_name', data.last_name);
         formData.append('email', data.email);
-        formData.append('password', data.password);
+        
+        // Only include password if explicitly provided (non-empty)
+        // For edit mode, sending empty password means "don't change password"
+        if (data.password) {
+            formData.append('password', data.password);
+        }
 
         if (isEditSession) {
-            formData.append('image', data?.editImage[0] ? data?.editImage[0] : data?.image[0]);
-            editUser({ userId: editId, userData: formData }, {
-                onSuccess: () => {
-                    onCloseModal?.()
-                    reset({
-                        first_name: '',
-                        last_name: '',
-                        email: '',
-                        password: ''
-                    })
-                }
-            })
-        }
-        else {
+            setPendingFormData({
+                userId: editId,
+                userData: formData,
+                editImage: data?.editImage,
+                image: data?.image
+            });
+            setShowPasswordConfirm(true);
+        } else {
             formData.append('image', data?.image[0]);
             createUser(formData, {
                 onSuccess: () => {
+                    onCloseModal?.();
+                    reset({
+                        first_name: '',
+                        last_name: '',
+                        email: '',
+                        password: ''
+                    });
+                },
+                onError: (error) => {
+                    // Show backend error in modal, do not close
+                    const backendMsg = error?.response?.data?.message || 'Something went wrong';
+                    if (setError) {
+                        setError('root', { type: 'manual', message: backendMsg });
+                    }
+                }
+            });
+        }
+    }
+
+    const handlePasswordConfirm = (adminPassword) => {
+        if (pendingFormData) {
+            const userData = pendingFormData.userData;
+            userData.append('image', pendingFormData?.editImage?.[0] ? pendingFormData?.editImage[0] : pendingFormData?.image[0]);
+            userData.append('adminPassword', adminPassword);
+
+            editUser({ userId: pendingFormData.userId, userData }, {
+                onSuccess: () => {
+                    setShowPasswordConfirm(false);
+                    setPendingFormData(null);
                     onCloseModal?.()
                     reset({
                         first_name: '',
@@ -56,9 +89,18 @@ export default function CreateEditUserModal({ userToEdit = {}, onCloseModal }) {
                         email: '',
                         password: ''
                     })
+                },
+                onError: () => {
+                    setShowPasswordConfirm(false);
+                    setPendingFormData(null);
                 }
             })
         }
+    }
+
+    const handlePasswordCancel = () => {
+        setShowPasswordConfirm(false);
+        setPendingFormData(null);
     }
 
     const onHandlePreview = (file) => {
@@ -73,10 +115,36 @@ export default function CreateEditUserModal({ userToEdit = {}, onCloseModal }) {
 
     return (
         <>
+            {showPasswordConfirm && (
+                <AdminPasswordConfirmModal
+                    onConfirm={handlePasswordConfirm}
+                    onCancel={handlePasswordCancel}
+                    isLoading={isEditing}
+                />
+            )}
             <h2 className="flex items-center gap-2 pb-4 mb-4 text-xl font-bold text-indigo-700 border-b dark:border-b-slate-700 border-slate-300">
                 {isEditSession ? <UserCog /> : <UserPlus />}
                 <span>{isEditSession ? "Edit User" : "Create User"}</span>
             </h2>
+            {/* Password requirements info box */}
+            {!isEditSession && (
+                <div className="mb-2 p-3 rounded bg-indigo-50 border border-indigo-200 text-sm text-indigo-900">
+                    <strong>Password requirements:</strong>
+                    <ul className="list-disc ml-5 mt-1">
+                        <li>At least 8 characters</li>
+                        <li>At least one uppercase letter</li>
+                        <li>At least one lowercase letter</li>
+                        <li>At least one digit</li>
+                        <li>At least one special character</li>
+                    </ul>
+                </div>
+            )}
+            {/* Show backend error message if present */}
+            {errors?.root && errors.root.message && (
+                <div className="mb-2 p-2 rounded bg-red-50 border border-red-200 text-sm text-red-700">
+                    {errors.root.message}
+                </div>
+            )}
             <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
                 <div className="flex w-full gap-4">
                     <div className="flex flex-col w-1/2 space-y-1">
@@ -133,19 +201,30 @@ export default function CreateEditUserModal({ userToEdit = {}, onCloseModal }) {
                 </div>
                 <div className="flex flex-col space-y-1">
                     <label className="text-sm" htmlFor="password">Password <span className="text-red-600">*</span></label>
-                    <input
-                        id="password"
-                        disabled={isWorking}
-                        {...register('password')}
-                        type="password"
-                        placeholder="Password"
-                        className={cn(
-                            'w-full px-3 py-2 transition-all duration-500 border rounded-md focus:outline-0 dark:bg-slate-700',
-                            errors.password
-                                ? 'border-red-600 dark:border-red-600 focus:border-red-500 dark:focus:border-red-600'
-                                : 'border-slate-300 dark:border-slate-500 focus:border-indigo-500 dark:focus:border-indigo-500'
-                        )}
-                    />
+                    <div className="relative">
+                        <input
+                            id="password"
+                            disabled={isWorking}
+                            {...register('password')}
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
+                            className={cn(
+                                'w-full px-3 py-2 transition-all duration-500 border rounded-md focus:outline-0 dark:bg-slate-700',
+                                errors.password
+                                    ? 'border-red-600 dark:border-red-600 focus:border-red-500 dark:focus:border-red-600'
+                                    : 'border-slate-300 dark:border-slate-500 focus:border-indigo-500 dark:focus:border-indigo-500'
+                            )}
+                        />
+                        <button
+                            type="button"
+                            tabIndex={-1}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600"
+                            onClick={() => setShowPassword((v) => !v)}
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                    </div>
                     {errors.password && <span className="text-xs italic text-red-600">{errors.password.message}</span>}
                 </div>
                 <div className="flex flex-col space-y-1">

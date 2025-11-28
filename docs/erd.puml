@@ -1,0 +1,81 @@
+@startuml
+!theme plain
+skinparam linetype ortho
+
+title Doitung ER Diagram
+
+entity "User" as User {
+  * _id : ObjectId
+  --
+  first_name : String
+  last_name  : String
+  email      : String
+  password   : String
+  resetOtp   : String
+  resetOtpExpireAt : Number
+  isRestricted : Boolean
+  image      : String
+  date       : Date
+}
+
+entity "Template" as Template {
+  * _id : ObjectId
+  --
+  uploaderId : ObjectId
+  title      : String
+  uploadedAt : Date
+  isPublic   : Boolean
+  filePath   : String
+  frequency  : Number
+}
+
+entity "Request" as Request {
+  * _id : ObjectId
+  --
+  senderId   : ObjectId
+  title      : String
+  status     : String
+  emailSubject : String
+  emailMessage : String
+  templateId : ObjectId
+  createdAt  : Date
+  updatedAt  : Date
+}
+
+entity "Recipient" as Recipient {
+  * id : ObjectId
+  --
+  requestId : ObjectId
+  userId    : ObjectId
+  signed    : Boolean
+}
+
+entity "PdfVersion" as PdfVersion {
+  * id : ObjectId
+  --
+  requestId : ObjectId
+  version   : Number
+  filePath  : String
+  signedByUserId : ObjectId
+  signedAt  : Date
+}
+
+' Relationships
+User ||--o{ Template : "uploads / uploaderId"
+User ||--o{ Request : "sends / senderId"
+Request }o--|| Template : "uses / templateId"
+Request ||--o{ Recipient : "has recipients"
+Request ||--o{ PdfVersion : "has pdfVersions"
+Recipient }o--|| User : "recipient.userId"
+PdfVersion }o--|| User : "signedBy.userId"
+
+' Recent templates (embedded array in User)
+User }o--o{ Template : "recentTemplates (templateId)"
+
+note bottom
+- ObjectId denotes a MongoDB reference
+- Recipient and PdfVersion are modelled as separate entities to show relationships and versioning
+- Timestamps (createdAt/updatedAt) provided by Mongoose timestamps option on Request
+end note
+
+@enduml

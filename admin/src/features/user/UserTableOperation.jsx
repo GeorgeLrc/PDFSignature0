@@ -8,8 +8,8 @@ export default function UserTableOperation() {
                 filterField='status'
                 options={[
                     { value: 'all', label: 'All' },
-                    { value: 'true', label: 'Unrestricted' },
-                    { value: 'false', label: 'Restricted' },
+                    { value: 'true', label: 'Restricted' },
+                    { value: 'false', label: 'Unrestricted' },
                 ]}
             />
             <SortBy options={[

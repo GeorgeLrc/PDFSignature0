@@ -8,13 +8,14 @@ const useCreateUser = () => {
     const { mutate: createUser, isPending: isCreating } = useMutation({
         mutationFn: createNewUser,
         onSuccess: () => {
-            toast.success("User created successfully")
-            queryClient.invalidateQueries({ queryKey: ['user-lists'] })
+            toast.success("User created successfully");
+            queryClient.invalidateQueries({ queryKey: ['user-lists'] });
         },
-        onError: () => {
-            toast.error("Failed to create user")
+        onError: (error) => {
+            const backendMsg = error?.response?.data?.message || "Failed to create user";
+            toast.error(backendMsg);
         }
-    })
+    });
 
     return { createUser, isCreating }
 }
