@@ -170,7 +170,8 @@ export default function RequestsPage() {
                 <th scope="col" className="py-3 pr-4">Step</th>
                 <th scope="col" className="py-3 pr-4">Date</th>
                 <th scope="col" className="py-3 pr-4">Status</th>
-                <th scope="col" className="py-3 text-right">Action</th>
+                <th scope="col" className="py-3 pr-4">Cancel</th>
+                <th scope="col" className="py-3 pr-4">View</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -244,38 +245,38 @@ export default function RequestsPage() {
                             : "Unknown"}
                         </span>
                       </td>
-                      <td className="py-4 text-right">
-                        <div className="flex flex-wrap items-center justify-end gap-2">
-                          {request.pdfVersions && request.pdfVersions.length > 0 ? (
-                            <button
-                              onClick={() =>
-                                handleOpenFile(
-                                  request.pdfVersions[request.pdfVersions.length - 1].filePath
-                                )
-                              }
-                              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-[0.98] hover:shadow-md"
-                              type="button"
-                            >
-                              View
-                            </button>
-                          ) : null}
-                          {request.status !== "approved" ? (
-                            <button
-                              onClick={() => handleCancel(request._id)}
-                              className="inline-flex items-center justify-center rounded-full border border-rose-400/50 bg-rose-500/10 px-4 py-1.5 text-xs font-semibold text-rose-600 shadow-sm transition hover:bg-rose-500/20 active:scale-[0.98] dark:border-rose-400/30 dark:text-rose-300"
-                              type="button"
-                            >
-                              Cancel
-                            </button>
-                          ) : null}
-                        </div>
+                      <td className="py-4 pr-4">
+                        {request.status !== "approved" ? (
+                          <button
+                            onClick={() => handleCancel(request._id)}
+                            className="inline-flex items-center justify-center rounded-full border border-rose-400/50 bg-rose-500/10 px-4 py-1.5 text-xs font-semibold text-rose-600 shadow-sm transition hover:bg-rose-500/20 active:scale-[0.98] dark:border-rose-400/30 dark:text-rose-300"
+                            type="button"
+                          >
+                            Cancel
+                          </button>
+                        ) : null}
+                      </td>
+                      <td className="py-4 pr-4">
+                        {request.pdfVersions && request.pdfVersions.length > 0 ? (
+                          <button
+                            onClick={() =>
+                              handleOpenFile(
+                                request.pdfVersions[request.pdfVersions.length - 1].filePath
+                              )
+                            }
+                            className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-[0.98] hover:shadow-md"
+                            type="button"
+                          >
+                            View
+                          </button>
+                        ) : null}
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan="7" className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                  <td colSpan="8" className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                     You haven't created any requests yet.
                   </td>
                 </tr>
