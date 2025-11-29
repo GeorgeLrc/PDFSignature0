@@ -49,7 +49,6 @@ const Sidebar = forwardRef(({ collapsed }, ref) => {
                             transition={{ duration: 0.4, delay: 0.3 }}
                         >
                             <h1 className='text-lg font-bold gradient-text'>Digital Signature</h1>
-                            <p className='text-xs font-medium text-slate-500 dark:text-slate-400 tracking-wide'>Premium System</p>
                         </motion.div>
                     )}
                 </NavLink>

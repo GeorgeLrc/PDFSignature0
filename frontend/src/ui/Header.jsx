@@ -28,7 +28,7 @@ export default function Header({ collapsed, setCollapsed }) {
                             size={20} 
                             className={cn(
                                 "absolute inset-0 text-slate-600 dark:text-slate-300 transition-all duration-300 group-hover:text-primary",
-                                !collapsed ? "opacity-0 rotate-180" : "opacity-100 rotate-0"
+                                collapsed ? "opacity-100 rotate-0" : "opacity-0 rotate-180"
                             )} 
                         />
                         <IconX 

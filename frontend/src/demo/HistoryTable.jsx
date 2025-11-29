@@ -17,11 +17,11 @@ export default function HistoryTable({ requests, startIndex = 0 }) {
       <table className="min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
         <thead>
           <tr className="bg-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-            <th scope="col" className="py-3 px-4">#</th>
-            <th scope="col" className="py-3 px-4">Title</th>
-            <th scope="col" className="py-3 px-4">Approvers</th>
-            <th scope="col" className="py-3 px-4">Date</th>
-            <th scope="col" className="py-3 px-4">Status</th>
+            <th scope="col" className="py-3 px-4 text-center">#</th>
+            <th scope="col" className="py-3 px-4 text-left">Title</th>
+            <th scope="col" className="py-3 px-4 text-left">Approvers</th>
+            <th scope="col" className="py-3 px-4 text-center">Date</th>
+            <th scope="col" className="py-3 px-4 text-center">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
@@ -34,9 +34,9 @@ export default function HistoryTable({ requests, startIndex = 0 }) {
               return (
                 <tr
                   key={request._id ?? rowNumber}
-                  className="text-center transition-colors hover:bg-blue-50/60 dark:hover:bg-slate-800/60"
+                  className="transition-colors hover:bg-blue-50/60 dark:hover:bg-slate-800/60"
                 >
-                  <td className="py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                  <td className="py-3 px-4 text-center font-semibold text-slate-500 dark:text-slate-400">
                     {String(rowNumber).padStart(2, "0")}
                   </td>
                   <td className="py-3 px-4 text-left font-medium">
@@ -65,10 +65,10 @@ export default function HistoryTable({ requests, startIndex = 0 }) {
                       <span className="text-xs text-slate-400 dark:text-slate-500">No recipients</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-slate-500 dark:text-slate-400">
+                  <td className="py-3 px-4 text-center text-slate-500 dark:text-slate-400">
                     {new Date(request.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 text-center">
                     <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${badgeStyle}`}>
                       {request.status
                         ? request.status.charAt(0).toUpperCase() + request.status.slice(1)

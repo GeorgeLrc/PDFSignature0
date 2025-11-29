@@ -54,7 +54,7 @@ export default function DashboardPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <h1 className="text-4xl font-bold gradient-text mb-2 py-6" style={{ fontFamily: 'Playwrite CU, cursive' }}>Welcome to Digital Signature</h1>
+        <h1 className="text-5xl font-bold gradient-text mb-2 py-6">Welcome to Digital Signature</h1>
         <p className="text-slate-600 dark:text-slate-400 text-lg">Manage your documents and signatures with ease</p>
       </motion.div>
 

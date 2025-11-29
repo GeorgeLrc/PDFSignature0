@@ -61,6 +61,23 @@ export default function RequestsPage() {
     return recipients.filter((recipient) => recipient.signed === true);
   };
 
+  const getSignedPercent = (completed, total) => {
+    if (!total || total === 0) return 0;
+    return Math.round((completed / total) * 100);
+  };
+
+  const getPercentColor = (percent) => {
+    if (percent <= 33) return 'text-red-600 dark:text-red-400';
+    if (percent <= 66) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-green-600 dark:text-green-400';
+  };
+
+  const getProgressBarColor = (percent) => {
+    if (percent <= 33) return 'bg-red-500';
+    if (percent <= 66) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
   const getMyRequest = async (token) => {
     try {
         let { data } = await api.get("/api/auth/my-requests", {
@@ -204,7 +221,18 @@ export default function RequestsPage() {
                         </div>
                       </td>
                       <td className="py-4 pr-4 font-semibold">
-                        {completed}/{total}
+                        <div className="flex items-center gap-3">
+                          <span>{completed}/{total}</span>
+                          <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden dark:bg-slate-700">
+                            <div 
+                              className={`h-full ${getProgressBarColor(getSignedPercent(completed, total))} transition-all duration-300`}
+                              style={{ width: `${getSignedPercent(completed, total)}%` }}
+                            />
+                          </div>
+                          <span className={`font-semibold ${getPercentColor(getSignedPercent(completed, total))}`}>
+                            {getSignedPercent(completed, total)}%
+                          </span>
+                        </div>
                       </td>
                       <td className="py-4 pr-4 text-slate-500 dark:text-slate-400">
                         {new Date(request.createdAt).toLocaleDateString()}

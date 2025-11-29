@@ -38,6 +38,23 @@ export default function Request() {
     return recipients.filter((recipient) => recipient.signed === true);
   };
 
+  const getSignedPercent = (completed, total) => {
+    if (!total || total === 0) return 0;
+    return Math.round((completed / total) * 100);
+  };
+
+  const getPercentColor = (percent) => {
+    if (percent <= 33) return 'text-red-600';
+    if (percent <= 66) return 'text-yellow-600';
+    return 'text-green-600';
+  };
+
+  const getProgressBarColor = (percent) => {
+    if (percent <= 33) return 'bg-red-500';
+    if (percent <= 66) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
   useEffect(() => {
     getMyRequests();
     getRequestsByOthers();
@@ -52,21 +69,21 @@ export default function Request() {
           <table className="min-w-full border border-gray-300 shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-3 border">No</th>
-                <th className="p-3 border">Title</th>
-                <th className="p-3 border">Approvers</th>
-                <th className="p-3 border">Step</th>
-                <th className="p-3 border">Date</th>
-                <th className="p-3 border">Status</th>
+                <th className="p-3 border text-center">No</th>
+                <th className="p-3 border text-left">Title</th>
+                <th className="p-3 border text-left">Approvers</th>
+                <th className="p-3 border text-center">Step</th>
+                <th className="p-3 border text-center">Date</th>
+                <th className="p-3 border text-center">Status</th>
               </tr>
             </thead>
             <tbody>
               {myRequests && myRequests.length > 0 ? (
                 myRequests.map((request, index) => (
-                  <tr key={index} className="text-center border">
-                    <td className="p-3 border">{index + 1}</td>
-                    <td className="p-3 border">{request.title}</td>
-                    <td className="p-3 border">
+                  <tr key={index} className="border">
+                    <td className="p-3 border text-center">{index + 1}</td>
+                    <td className="p-3 border text-left">{request.title}</td>
+                    <td className="p-3 border text-left">
                       {request.recipients.map((recipient, index) => (
                         <span key={index} className="text-blue-500">
                           {recipient.userId.first_name} {recipient.userId.last_name}
@@ -75,13 +92,31 @@ export default function Request() {
                       ))}
                     </td>
                     {/* need to update data */}
-                    <td className="p-3 border">
-                      {request.recipients ? checkFinishedSignedCount(request.recipients).length : 0}/{request.recipients.length}
+                    <td className="p-3 border text-center">
+                      {(() => {
+                        const completed = request.recipients ? checkFinishedSignedCount(request.recipients).length : 0;
+                        const total = request.recipients ? request.recipients.length : 0;
+                        const percent = getSignedPercent(completed, total);
+                        return (
+                          <div className="flex items-center justify-center gap-2">
+                            <span>{completed}/{total}</span>
+                            <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${getProgressBarColor(percent)} transition-all duration-300`}
+                                style={{ width: `${percent}%` }}
+                              />
+                            </div>
+                            <span className={`font-semibold ${getPercentColor(percent)}`}>
+                              {percent}%
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </td>
-                    <td className="p-3 border">
+                    <td className="p-3 border text-center">
                       {new Date(request.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="p-3 border">
+                    <td className="p-3 border text-center">
                       <span
                         className={`px-3 py-1 rounded-full text-white ${request.status === "pending"
                           ? "bg-yellow-500"
@@ -93,8 +128,8 @@ export default function Request() {
                         {request.status}
                       </span>
                     </td>
-                    <td className="p-3 border">
-                      <button onClick={() => handleCancel(request._id)} className="px-3 py-1 bg-red-500 text-white rounded-md">Cancel</button>
+                    <td className="p-3 border text-center">
+                      <button onClick={() => handleCancel(request._id)} className="px-2 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600">Cancel</button>
                     </td>
                   </tr>
                 ))
@@ -117,26 +152,26 @@ export default function Request() {
           <table className="min-w-full border border-gray-300 shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-3 border">No</th>
-                <th className="p-3 border">Title</th>
-                <th className="p-3 border">Sender</th>
-                <th className="p-3 border">Date</th>
-                <th className="p-3 border">Action</th>
+                <th className="p-3 border text-center">No</th>
+                <th className="p-3 border text-left">Title</th>
+                <th className="p-3 border text-left">Sender</th>
+                <th className="p-3 border text-center">Date</th>
+                <th className="p-3 border text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {requestsByOthers && requestsByOthers.length > 0 ? (
                 requestsByOthers.map((request, index) => (
-                  <tr key={index} className="text-center border">
-                    <td className="p-3 border">{index + 1}</td>
-                    <td className="p-3 border">{request.title}</td>
-                    <td className="p-3 border">
+                  <tr key={index} className="border">
+                    <td className="p-3 border text-center">{index + 1}</td>
+                    <td className="p-3 border text-left">{request.title}</td>
+                    <td className="p-3 border text-left">
                       {request.senderId.first_name} {request.senderId.last_name}
                     </td>
-                    <td className="p-3 border">
+                    <td className="p-3 border text-center">
                       {new Date(request.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="p-3 border">
+                    <td className="p-3 border text-center">
                       <button onClick={() => navigate(`/sign-pdf/${request._id}`)} className="border border-black px-2 hover:bg-blue-400"> sign </button>
                     </td>
                     
