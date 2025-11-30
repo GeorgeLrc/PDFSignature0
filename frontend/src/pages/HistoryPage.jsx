@@ -18,7 +18,7 @@ export default function HistoryPage() {
     requestsByOthers,
     getRequestsByOthers,
     userData,
-  } = useContext(AppContext);
+      getRequestsByOthersAll } = useContext(AppContext);
 
   const [filteredRequests, setFilteredRequests] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
@@ -28,12 +28,16 @@ export default function HistoryPage() {
   useEffect(() => {
     getRequests();
     getMyRequests();
-    getRequestsByOthers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!userData || !userData._id) return;
+
+    // Ensure we populate the 'requestsByOthers' with all requests where this user is a recipient (signed or not)
+    if (typeof getRequestsByOthersAll === 'function') {
+      getRequestsByOthersAll();
+    }
 
     if (activeTab === "all") {
       const combined = [...(myRequests || []), ...(requestsByOthers || [])];

@@ -29,6 +29,7 @@ export default function CreateRequest() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [recipients, setRecipients] = useState([]);
+  const [requireSequentialSigning, setRequireSequentialSigning] = useState(false);
 
   const [currentRecipient, setCurrentRecipient] = useState(null);
 
@@ -122,10 +123,11 @@ export default function CreateRequest() {
       }
 
 
-      const formattedRecipients = recipients.map((user) => ({
+      const formattedRecipients = recipients.map((user, index) => ({
         userId: user._id,
         signed: false,
         signaturePositions: user.signaturePositions || [],
+        ...(requireSequentialSigning && { order: index + 1 })  // Add order if sequential signing enabled
       }));
 
       console.log("formt",formattedRecipients)
@@ -258,6 +260,26 @@ export default function CreateRequest() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={requireSequentialSigning}
+                  onChange={(e) => setRequireSequentialSigning(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                />
+                <div>
+                  <div className="font-medium text-gray-700">Require Sequential Signing</div>
+                  <div className="text-xs text-gray-600">
+                    {requireSequentialSigning 
+                      ? `✓ Approvers must sign in order (1st → 2nd → 3rd...)`
+                      : `Approvers can sign in any order`
+                    }
+                  </div>
+                </div>
+              </label>
+            </div>
 
             <div className="flex justify-end">
               <button

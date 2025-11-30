@@ -23,9 +23,16 @@ const requestSchema = new mongoose.Schema(
           ref: "User", // Assuming there's a User model
           required: true,
         },
+        order: {
+          type: Number,
+          required: true, // Position in signing order (1, 2, 3, etc.)
+        },
         signed: {
           type: Boolean,
           default: false,
+        },
+        signedAt: {
+          type: Date, // When they signed
         },
         signaturePositions: [
           {

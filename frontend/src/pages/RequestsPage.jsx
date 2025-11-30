@@ -78,6 +78,55 @@ export default function RequestsPage() {
     return 'bg-green-500';
   };
 
+  // Check if current user can sign this request (for sequential signing validation)
+  const getSigningStatus = (request) => {
+    if (!request || !Array.isArray(request.recipients)) {
+      return { canSign: true, message: '' };
+    }
+
+    // Find current user in recipients
+    const currentUserRecipient = request.recipients.find(
+      (r) => r.userId?._id === localStorage.getItem('userId')
+    );
+
+    if (!currentUserRecipient) {
+      return { canSign: true, message: '' };
+    }
+
+    // If already signed, can't sign again
+    if (currentUserRecipient.signed) {
+      return { canSign: false, message: 'Already signed' };
+    }
+
+    // If no order field, sequential signing not required
+    if (!currentUserRecipient.order) {
+      return { canSign: true, message: '' };
+    }
+
+    // Sequential signing: check if all previous approvers have signed
+    const previousApprovers = request.recipients.filter(
+      (r) => r.order && r.order < currentUserRecipient.order
+    );
+
+    const firstUnsignedPrevious = previousApprovers.find((r) => !r.signed);
+    
+    if (firstUnsignedPrevious) {
+      const uid = firstUnsignedPrevious.userId;
+      const approverName = uid
+        ? (uid.first_name || uid.firstName || uid.name || uid.fullName
+            ? `${uid.first_name || uid.firstName || uid.name || uid.fullName}`.trim()
+            : uid.email || uid.username || null)
+        : null;
+      const display = approverName || `Approver #${firstUnsignedPrevious.order}`;
+      return {
+        canSign: false,
+        message: `Waiting for ${display} to sign first`,
+      };
+    }
+
+    return { canSign: true, message: '' };
+  };
+
   const getMyRequest = async (token) => {
     try {
         let { data } = await api.get("/api/auth/my-requests", {
@@ -208,14 +257,34 @@ export default function RequestsPage() {
                       <td className="py-4 pr-4">
                         <div className="flex flex-wrap gap-1.5">
                           {request.recipients && request.recipients.length ? (
-                            request.recipients.map((recipient, idx) => (
-                              <span
-                                key={idx}
-                                className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300"
-                              >
-                                {(recipient.userId?.first_name || "").trim()} {recipient.userId?.last_name || ""}
-                              </span>
-                            ))
+                            request.recipients.map((recipient, idx) => {
+                              // Find the first unsigned recipient to indicate next signer
+                              const isNextSigner = !recipient.signed && 
+                                request.recipients.every((r, i) => i >= idx || r.signed === true);
+                              
+                              return (
+                                <div key={idx} className="relative">
+                                  <span
+                                    className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium transition-colors ${
+                                      recipient.signed
+                                        ? 'border-green-500/30 bg-green-500/10 text-green-600 dark:border-green-400/20 dark:bg-green-400/10 dark:text-green-300'
+                                        : 'border-blue-500/30 bg-blue-500/10 text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300'
+                                    }`}
+                                    title={recipient.signed ? `Signed on ${new Date(recipient.signedAt).toLocaleString()}` : 'Pending signature'}
+                                  >
+                                    {recipient.order && (
+                                      <span className="mr-1 font-bold">{recipient.order}.</span>
+                                    )}
+                                    {(recipient.userId?.first_name || "").trim()} {recipient.userId?.last_name || ""}
+                                  </span>
+                                  {isNextSigner && (
+                                    <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-amber-500 rounded-full">
+                                      →
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })
                           ) : (
                             <span className="text-xs text-slate-400">No approvers</span>
                           )}
@@ -334,13 +403,31 @@ export default function RequestsPage() {
                       {new Date(request.createdAt).toLocaleDateString()}
                     </td>
                     <td className="py-4 text-right">
-                      <button
-                        onClick={() => navigate(`/sign-pdf/${request._id}`)}
-                        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:shadow-md active:scale-[0.98]"
-                        type="button"
-                      >
-                        Sign
-                      </button>
+                      {(() => {
+                        const signingStatus = getSigningStatus(request);
+                        return (
+                          <div className="flex flex-col items-end gap-2">
+                            <button
+                              onClick={() => navigate(`/sign-pdf/${request._id}`)}
+                              disabled={!signingStatus.canSign}
+                              className={`inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm transition active:scale-[0.98] ${
+                                signingStatus.canSign
+                                  ? 'bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-500 text-white hover:shadow-md cursor-pointer'
+                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60 dark:bg-gray-700 dark:text-gray-400'
+                              }`}
+                              type="button"
+                              title={signingStatus.message}
+                            >
+                              Sign
+                            </button>
+                            {!signingStatus.canSign && signingStatus.message && (
+                              <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded px-2 py-1 max-w-xs text-right">
+                                ⚠️ {signingStatus.message}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                     </tr>
                   );

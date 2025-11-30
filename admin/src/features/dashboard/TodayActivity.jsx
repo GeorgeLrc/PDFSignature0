@@ -17,7 +17,7 @@ export default function TodayActivity({ recentRequests = [], isLoading }) {
 
     return (
         <div className="glass-card p-6 space-y-4">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">Today Activities</h2>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">History Activities</h2>
             <div className="h-64 overflow-y-auto custom-scrollbar space-y-3">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-16 text-sm font-medium text-slate-500 dark:text-slate-400">

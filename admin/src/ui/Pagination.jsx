@@ -30,9 +30,9 @@ export default function Pagination({ count }) {
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-2xl shadow-lg">
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                Showing{' '}
+                Showing items{' '}
                 <span className="font-bold text-primary">{(currentPage - 1) * PAGE_SIZE + 1}</span>
-                {' '}to{' '}
+                {' '}—{' '}
                 <span className="font-bold text-primary">{isLastPage ? count : currentPage * PAGE_SIZE}</span>
                 {' '}of{' '}
                 <span className="font-bold text-primary">{count}</span>

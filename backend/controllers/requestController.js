@@ -61,7 +61,8 @@ const getRequestsByCurrentUser = async (req, res) => {
 
     const requests = await requestModel
       .find({ senderId: userId })
-      .populate("recipients.userId", "first_name last_name email");
+      .populate("recipients.userId", "first_name last_name email")
+      .populate("pdfVersions.signedBy.userId", "first_name last_name email");
 
     return res.json({ success: true, requests });
   } catch (error) {
@@ -81,7 +82,8 @@ const getRequestsRecievedFromOtherUsers = async (req, res) => {
     const requests = await requestModel
       .find({ recipients: { $elemMatch: { userId, signed: false } } })
       .populate("senderId", "first_name last_name email") // Get sender details
-      .populate("recipients.userId", "first_name last_name email"); // Get recipient details
+      .populate("recipients.userId", "first_name last_name email") // Get recipient details
+      .populate("pdfVersions.signedBy.userId", "first_name last_name email");
 
     return res.json({ success: true, requests });
   } catch (error) {
@@ -172,6 +174,29 @@ const signedByTheCurrentUser = async (req, res) => {
       });
     }
 
+    // Sequential signing validation: Check if all previous approvers have signed
+    const currentApprover = request.recipients[recipientIndex];
+    if (currentApprover.order && currentApprover.order > 1) {
+      const previousApprovers = request.recipients.filter(
+        (r) => r.order && r.order < currentApprover.order
+      );
+      const allPreviousSigned = previousApprovers.every((r) => r.signed === true);
+      
+      if (!allPreviousSigned) {
+        // Find the first unsigned previous approver for error message
+        const nextRequiredApprover = previousApprovers.find((r) => r.signed === false);
+        const approverName = nextRequiredApprover.userId.first_name 
+          ? `${nextRequiredApprover.userId.first_name} ${nextRequiredApprover.userId.last_name}`
+          : "Previous approver";
+        
+        return res.json({
+          success: false,
+          message: `Cannot sign out of order. Please wait for ${approverName} (Approver ${nextRequiredApprover.order}) to sign first.`,
+          requiresSequentialSigning: true,
+        });
+      }
+    }
+
     // Determine the new version number
     const version = request.pdfVersions.length + 1;
 
@@ -187,6 +212,7 @@ const signedByTheCurrentUser = async (req, res) => {
 
     // Mark user as signed in recipients array
     request.recipients[recipientIndex].signed = true;
+    request.recipients[recipientIndex].signedAt = new Date();
 
     // Check if all recipients have signed
     const allSigned = request.recipients.every((r) => r.signed);

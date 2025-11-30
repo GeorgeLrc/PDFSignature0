@@ -115,6 +115,25 @@ export const AppContextProvider = ({children}) => {
         }
     }
 
+    // Fetch all requests and return those where current user is a recipient (signed or not)
+    const getRequestsByOthersAll = async () => {
+        try {
+            const {data} = await axios.get(backendUrl+"/api/auth/requests");
+            if(data.success){
+                const all = data.requests || [];
+                const filtered = all.filter((req) => Array.isArray(req.recipients) && req.recipients.some(r => {
+                    const rid = r.userId && (r.userId._id || r.userId) ? (r.userId._id ? String(r.userId._id) : String(r.userId)) : null;
+                    return rid && userData && String(userData._id) === String(rid);
+                }));
+                setRequestsByOthers(filtered);
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
     const getPublicTemplates =  async () => {
         try {
             const {data} = await axios.get(backendUrl+"/api/auth/public-templates");
@@ -183,8 +202,9 @@ export const AppContextProvider = ({children}) => {
         templatesByCurrentUser,getTemplatesByCurrentUser,
         templateById,getTemplateById,
         otherUsers,getOtherUsersList,
-        myRequests,getMyRequests,
-        requestsByOthers,getRequestsByOthers,
+    myRequests,getMyRequests,
+    requestsByOthers,getRequestsByOthers,
+    getRequestsByOthersAll,
         publicTemplates,getPublicTemplates,
         signature,setSignature,
         requestById,getRequestById,

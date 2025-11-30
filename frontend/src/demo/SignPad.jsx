@@ -20,6 +20,40 @@ export default function SignPad({ request, setIsModalOpen }) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isPlacementModalOpen, setIsPlacementModalOpen] = useState(false);
   const [signaturePositions, setSignaturePositions] = useState([]);
+  
+  // Determine if current user can sign (show helpful message even when Apply is disabled)
+  const signingStatus = useMemo(() => {
+    if (!request || !Array.isArray(request.recipients) || !userData) return { canSign: true, message: '' };
+
+    const recipient = request.recipients.find((item) => {
+      const recipientUserId =
+        item?.userId && item.userId._id
+          ? item.userId._id.toString()
+          : item?.userId
+          ? String(item.userId)
+          : null;
+      return recipientUserId && recipientUserId === String(userData?._id ?? "");
+    });
+
+    if (!recipient) return { canSign: true, message: '' };
+    if (recipient.signed) return { canSign: false, message: 'Already signed' };
+    if (!recipient.order) return { canSign: true, message: '' };
+
+    const previous = request.recipients.filter((r) => r.order && r.order < recipient.order);
+    const firstUnsigned = previous.find((r) => !r.signed);
+    if (firstUnsigned) {
+      const uid = firstUnsigned.userId;
+      const nameFromUid = uid
+        ? (uid.first_name || uid.firstName || uid.name || uid.fullName
+            ? `${uid.first_name || uid.firstName || uid.name || uid.fullName}`.trim()
+            : uid.email || uid.username || null)
+        : null;
+      const displayName = nameFromUid || `Approver #${firstUnsigned.order}`;
+      return { canSign: false, message: `Waiting for ${displayName} to sign first` };
+    }
+
+    return { canSign: true, message: '' };
+  }, [request, userData]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -247,7 +281,24 @@ export default function SignPad({ request, setIsModalOpen }) {
         setIsModalOpen(false);
         setTimeout(() => window.location.reload(), 700);
       } else {
-        toast.error(data.message || "Failed to save signature");
+        // Enhanced error handling for sequential signing violations
+        if (data.requiresSequentialSigning) {
+          toast.error(data.message, {
+            autoClose: false,
+            closeButton: true,
+            style: {
+              backgroundColor: '#fee2e2',
+              color: '#991b1b',
+              border: '2px solid #dc2626',
+              borderRadius: '8px',
+              padding: '16px',
+              fontSize: '14px',
+              fontWeight: '500',
+            },
+          });
+        } else {
+          toast.error(data.message || "Failed to save signature");
+        }
       }
     } catch (error) {
       console.error("Error signing PDF:", error);
@@ -271,6 +322,15 @@ export default function SignPad({ request, setIsModalOpen }) {
           <li>Apply your signature to all marked positions</li>
         </ol>
       </div>
+
+      {/* Show an inline blocking message under the action buttons so users see why Apply does nothing */}
+      {!signingStatus.canSign && signingStatus.message && (
+        <div className="mt-2">
+          <div className="text-sm text-red-700 bg-red-50 border border-red-200 p-2 rounded">
+            {signingStatus.message}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-[10000]">
         <button
