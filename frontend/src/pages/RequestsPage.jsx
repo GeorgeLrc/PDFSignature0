@@ -257,34 +257,38 @@ export default function RequestsPage() {
                       <td className="py-4 pr-4">
                         <div className="flex flex-wrap gap-1.5">
                           {request.recipients && request.recipients.length ? (
-                            request.recipients.map((recipient, idx) => {
-                              // Find the first unsigned recipient to indicate next signer
-                              const isNextSigner = !recipient.signed && 
-                                request.recipients.every((r, i) => i >= idx || r.signed === true);
-                              
-                              return (
-                                <div key={idx} className="relative">
-                                  <span
-                                    className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium transition-colors ${
-                                      recipient.signed
-                                        ? 'border-green-500/30 bg-green-500/10 text-green-600 dark:border-green-400/20 dark:bg-green-400/10 dark:text-green-300'
-                                        : 'border-blue-500/30 bg-blue-500/10 text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300'
-                                    }`}
-                                    title={recipient.signed ? `Signed on ${new Date(recipient.signedAt).toLocaleString()}` : 'Pending signature'}
-                                  >
-                                    {recipient.order && (
-                                      <span className="mr-1 font-bold">{recipient.order}.</span>
-                                    )}
-                                    {(recipient.userId?.first_name || "").trim()} {recipient.userId?.last_name || ""}
-                                  </span>
-                                  {isNextSigner && (
-                                    <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-amber-500 rounded-full">
-                                      →
+                            (() => {
+                              // Determine if this request uses sequential ordering (any recipient has an order)
+                              const sequential = request.recipients.some((r) => r.order);
+                              return request.recipients.map((recipient, idx) => {
+                                // Find the first unsigned recipient to indicate next signer
+                                const isNextSigner = !recipient.signed && 
+                                  request.recipients.every((r, i) => i >= idx || r.signed === true);
+
+                                return (
+                                  <div key={idx} className="relative">
+                                    <span
+                                      className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium transition-colors ${
+                                        recipient.signed
+                                          ? 'border-green-500/30 bg-green-500/10 text-green-600 dark:border-green-400/20 dark:bg-green-400/10 dark:text-green-300'
+                                          : 'border-blue-500/30 bg-blue-500/10 text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300'
+                                      }`}
+                                      title={recipient.signed ? `Signed on ${new Date(recipient.signedAt).toLocaleString()}` : 'Pending signature'}
+                                    >
+                                      {recipient.order && (
+                                        <span className="mr-1 font-bold">{recipient.order}.</span>
+                                      )}
+                                      {(recipient.userId?.first_name || "").trim()} {recipient.userId?.last_name || ""}
                                     </span>
-                                  )}
-                                </div>
-                              );
-                            })
+                                    {sequential && isNextSigner && (
+                                      <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-amber-500 rounded-full">
+                                        →
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              });
+                            })()
                           ) : (
                             <span className="text-xs text-slate-400">No approvers</span>
                           )}
