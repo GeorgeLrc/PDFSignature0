@@ -25,7 +25,8 @@ const requestSchema = new mongoose.Schema(
         },
         order: {
           type: Number,
-          required: true, // Position in signing order (1, 2, 3, etc.)
+          // Position in signing order (1, 2, 3, etc.).
+          // Not required because requests may allow non-sequential signing.
         },
         signed: {
           type: Boolean,
