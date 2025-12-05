@@ -16,6 +16,10 @@ const requestSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    dueDate: {
+      type: Date,
+      // Optional: deadline for document to be signed. If not provided, no time-based status.
+    },
     recipients: [
       {
         userId: {

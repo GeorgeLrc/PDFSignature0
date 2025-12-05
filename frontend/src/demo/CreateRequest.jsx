@@ -30,6 +30,7 @@ export default function CreateRequest() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [recipients, setRecipients] = useState([]);
   const [requireSequentialSigning, setRequireSequentialSigning] = useState(false);
+  const [dueDate, setDueDate] = useState("");
 
   const [currentRecipient, setCurrentRecipient] = useState(null);
 
@@ -137,7 +138,8 @@ export default function CreateRequest() {
         emailSubject: subject,
         emailMessage: message,
         templateId,
-        title
+        title,
+        ...(dueDate && { dueDate }) // Add dueDate if provided
       }, {
         headers: {
           
@@ -259,6 +261,14 @@ export default function CreateRequest() {
               rows="5"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+            />
+
+            <label className="block text-sm font-medium">Due Date (Optional)</label>
+            <input
+              type="date"
+              className="w-full p-2 border rounded focus:ring-1 focus:ring-blue-300"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
             />
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

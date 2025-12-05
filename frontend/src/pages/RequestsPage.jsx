@@ -16,6 +16,17 @@ const STATUS_STYLES = {
     "bg-slate-100 text-slate-600 border border-slate-200 shadow-sm dark:bg-slate-700/40 dark:border-slate-600/40 dark:text-slate-200",
 };
 
+const STATUS_CATEGORY_STYLES = {
+  Overdue:
+    "bg-red-100 text-red-700 border border-red-200 shadow-sm dark:bg-red-400/10 dark:border-red-400/20 dark:text-red-300",
+  "Due Today":
+    "bg-amber-100 text-amber-700 border border-amber-200 shadow-sm dark:bg-amber-400/10 dark:border-amber-400/20 dark:text-amber-300",
+  Open:
+    "bg-blue-100 text-blue-700 border border-blue-200 shadow-sm dark:bg-blue-400/10 dark:border-blue-400/20 dark:text-blue-300",
+  Cancelled:
+    "bg-slate-100 text-slate-600 border border-slate-200 shadow-sm dark:bg-slate-700/40 dark:border-slate-600/40 dark:text-slate-200",
+};
+
 export default function RequestsPage() {
 
   const navigate = useNavigate();
@@ -76,6 +87,11 @@ export default function RequestsPage() {
     if (percent <= 33) return 'bg-red-500';
     if (percent <= 66) return 'bg-yellow-500';
     return 'bg-green-500';
+  };
+
+  // Get status category style badge
+  const getStatusCategoryStyle = (statusCategory) => {
+    return STATUS_CATEGORY_STYLES[statusCategory] || STATUS_CATEGORY_STYLES.Open;
   };
 
   // Check if current user can sign this request (for sequential signing validation)
@@ -218,6 +234,7 @@ export default function RequestsPage() {
                 <th scope="col" className="py-3 pr-4">Approvers</th>
                 <th scope="col" className="py-3 pr-4">Step</th>
                 <th scope="col" className="py-3 pr-4">Date</th>
+                <th scope="col" className="py-3 pr-4">Due Date</th>
                 <th scope="col" className="py-3 pr-4">Status</th>
                 <th scope="col" className="py-3 pr-4">Cancel</th>
                 <th scope="col" className="py-3 pr-4">View</th>
@@ -312,6 +329,15 @@ export default function RequestsPage() {
                         {new Date(request.createdAt).toLocaleDateString()}
                       </td>
                       <td className="py-4 pr-4">
+                        {request.dueDate ? (
+                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getStatusCategoryStyle(request.statusCategory)}`}>
+                            {new Date(request.dueDate).toLocaleDateString()}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+                        )}
+                      </td>
+                      <td className="py-4 pr-4">
                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${badgeStyle}`}>
                           {request.status
                             ? request.status.charAt(0).toUpperCase() + request.status.slice(1)
@@ -349,7 +375,7 @@ export default function RequestsPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan="8" className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                  <td colSpan="9" className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                     You haven't created any requests yet.
                   </td>
                 </tr>
@@ -380,6 +406,7 @@ export default function RequestsPage() {
                 <th scope="col" className="py-3 pr-4">Title</th>
                 <th scope="col" className="py-3 pr-4">Sender</th>
                 <th scope="col" className="py-3 pr-4">Date</th>
+                <th scope="col" className="py-3 pr-4">Due Date</th>
                 <th scope="col" className="py-3 text-right">Action</th>
               </tr>
             </thead>
@@ -405,6 +432,15 @@ export default function RequestsPage() {
                     </td>
                     <td className="py-4 pr-4 text-slate-500 dark:text-slate-400">
                       {new Date(request.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-4 pr-4">
+                      {request.dueDate ? (
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getStatusCategoryStyle(request.statusCategory)}`}>
+                          {new Date(request.dueDate).toLocaleDateString()}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+                      )}
                     </td>
                     <td className="py-4 text-right">
                       {(() => {
@@ -438,7 +474,7 @@ export default function RequestsPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan="5" className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                  <td colSpan="6" className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                     No pending requests from others.
                   </td>
                 </tr>

@@ -1,4 +1,5 @@
 const requestModel = require("../models/requestModel");
+const { getRequestStatusCategory } = require("../utils/requestStatusHelper");
 
 //create request
 const createNewRequest = async (req, res) => {
@@ -10,6 +11,7 @@ const createNewRequest = async (req, res) => {
       emailMessage,
       templateId,
       title,
+      dueDate,
     } = req.body;
 
     if (
@@ -40,6 +42,11 @@ const createNewRequest = async (req, res) => {
       title,
     };
 
+    // Add dueDate if provided
+    if (dueDate) {
+      requestData.dueDate = dueDate;
+    }
+
     const newRequest = new requestModel(requestData);
     await newRequest.save();
 
@@ -59,10 +66,16 @@ const getRequestsByCurrentUser = async (req, res) => {
       return res.json({ success: false, message: "User ID is required" });
     }
 
-    const requests = await requestModel
+    let requests = await requestModel
       .find({ senderId: userId })
       .populate("recipients.userId", "first_name last_name email")
       .populate("pdfVersions.signedBy.userId", "first_name last_name email");
+
+    // Add computed status category to each request
+    requests = requests.map((request) => ({
+      ...request.toObject(),
+      statusCategory: getRequestStatusCategory(request),
+    }));
 
     return res.json({ success: true, requests });
   } catch (error) {
@@ -79,11 +92,17 @@ const getRequestsRecievedFromOtherUsers = async (req, res) => {
     }
 
     // Find requests where the current user is in the recipients array
-    const requests = await requestModel
+    let requests = await requestModel
       .find({ recipients: { $elemMatch: { userId, signed: false } } })
       .populate("senderId", "first_name last_name email") // Get sender details
       .populate("recipients.userId", "first_name last_name email") // Get recipient details
       .populate("pdfVersions.signedBy.userId", "first_name last_name email");
+
+    // Add computed status category to each request
+    requests = requests.map((request) => ({
+      ...request.toObject(),
+      statusCategory: getRequestStatusCategory(request),
+    }));
 
     return res.json({ success: true, requests });
   } catch (error) {

@@ -55,6 +55,16 @@ export default function SignPad({ request, setIsModalOpen }) {
     return { canSign: true, message: '' };
   }, [request, userData]);
 
+  // Check if request is past due date
+  const isOverdue = useMemo(() => {
+    if (!request || !request.dueDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(request.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate.getTime() < today.getTime();
+  }, [request]);
+
   useEffect(() => {
     if (!accessToken) return;
 
@@ -322,6 +332,19 @@ export default function SignPad({ request, setIsModalOpen }) {
           <li>Apply your signature to all marked positions</li>
         </ol>
       </div>
+
+      {/* Show overdue warning if applicable */}
+      {isOverdue && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+          <h3 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+            ⏰ Overdue Notice
+          </h3>
+          <p className="text-sm text-red-700">
+            This document was due on <strong>{new Date(request.dueDate).toLocaleDateString()}</strong> and is now overdue. 
+            Please complete your signature as soon as possible.
+          </p>
+        </div>
+      )}
 
       {/* Show an inline blocking message under the action buttons so users see why Apply does nothing */}
       {!signingStatus.canSign && signingStatus.message && (

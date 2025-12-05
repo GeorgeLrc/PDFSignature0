@@ -2,7 +2,7 @@
 import React, { useContext, useEffect } from "react";
 import DashboardCard from "./components/DashboardCard";
 import TemplatesList from "@/features/template/TemplatesList";
-import { IconApps, IconFileText, IconCircleCheck, IconClock } from "@tabler/icons-react";
+import { IconApps, IconFileText, IconCircleCheck, IconClock, IconAlertCircle } from "@tabler/icons-react";
 import { AppContext } from "../demo/AppContext";
 import { motion } from "framer-motion";
 
@@ -19,6 +19,17 @@ export default function DashboardPage() {
   const requestCount = myRequests ? myRequests.length : 0;
   const successCount = allRequests.filter(r => r.status === "approved").length;
   const pendingCount = allRequests.filter(r => r.status === "pending").length;
+
+  // Calculate overdue count
+  const overdueCount = allRequests.filter(request => {
+    if (!request.dueDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(request.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    // Count as overdue if past due date and not fully signed/approved
+    return dueDate.getTime() < today.getTime() && request.status !== "approved";
+  }).length;
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -65,7 +76,7 @@ export default function DashboardPage() {
         animate="visible"
       >
         <h2 className="text-2xl font-bold gradient-text mb-6">Dashboard Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-6">
           <motion.div custom={0} variants={cardVariants}>
             <DashboardCard 
               title="All Requests" 
@@ -100,6 +111,15 @@ export default function DashboardPage() {
               icon={IconClock} 
               to="/requests?status=pending" 
               gradient="from-amber-500 to-amber-600"
+            />
+          </motion.div>
+          <motion.div custom={4} variants={cardVariants}>
+            <DashboardCard 
+              title="Overdue" 
+              count={overdueCount} 
+              icon={IconAlertCircle} 
+              to="/requests" 
+              gradient="from-red-500 to-red-600"
             />
           </motion.div>
         </div>
